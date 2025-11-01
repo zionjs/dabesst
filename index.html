@@ -3,33 +3,576 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - GitHub Data Manager</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Sistem Login dan Manajemen Data GitHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4cc9f0;
+            font-weight: 600;
+        }
+        
+        .card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            color: #f72585;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4cc9f0;
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(90deg, #f72585 0%, #7209b7 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(242, 5, 133, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .logout-btn {
+            background: linear-gradient(90deg, #7209b7 0%, #3a0ca3 100%);
+            width: auto;
+            padding: 8px 15px;
+            margin-top: 0;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .success {
+            background-color: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #4CAF50;
+        }
+        
+        .error {
+            background-color: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #f44336;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #4cc9f0;
+        }
+        
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(90deg, #f72585 0%, #b5179e 100%);
+        }
+        
+        .number-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>GitHub Data Manager</h1>
-        <form action="login.php" method="POST" class="login-form">
+    <div class="container">
+        <div class="header">
+            <h1>Sistem Login dan Manajemen Data GitHub</h1>
+            <div id="userInfo" class="user-info hidden">
+                <span id="usernameDisplay"></span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="loginSection" class="card">
+            <h2>Login</h2>
             <div class="form-group">
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" placeholder="Masukkan username">
             </div>
             <div class="form-group">
                 <label for="token">GitHub Token:</label>
-                <input type="password" id="token" name="token" required>
+                <input type="text" id="token" placeholder="Masukkan token GitHub">
             </div>
-            <button type="submit" class="btn-login">Login</button>
-        </form>
-        <div id="message" class="message"></div>
+            <button id="loginBtn">Login</button>
+            <div id="loginStatus" class="status hidden"></div>
+        </div>
+        
+        <!-- Add Number Form -->
+        <div id="addNumberSection" class="card hidden">
+            <h2>Tambah Nomor Baru</h2>
+            <div class="form-group">
+                <label for="newNumber">Nomor:</label>
+                <input type="text" id="newNumber" placeholder="Masukkan nomor baru">
+            </div>
+            <button id="addNumberBtn">Tambah Nomor</button>
+            <div id="addNumberStatus" class="status hidden"></div>
+        </div>
+        
+        <!-- Number List -->
+        <div id="numberListSection" class="card hidden">
+            <h2>Daftar Nomor Terdaftar</h2>
+            <div class="number-list">
+                <div id="loadingNumbers" class="loading hidden">Memuat data...</div>
+                <table id="numbersTable" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nomor</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="numbersTableBody">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+                <div id="emptyNumbers" class="loading hidden">Tidak ada data nomor.</div>
+            </div>
+            <button id="refreshNumbersBtn">Refresh Data</button>
+        </div>
     </div>
 
     <script>
-        // Menampilkan pesan error jika ada
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-        if (error) {
-            document.getElementById('message').textContent = decodeURIComponent(error);
-            document.getElementById('message').className = 'message error';
+        // Elemen DOM
+        const loginSection = document.getElementById('loginSection');
+        const addNumberSection = document.getElementById('addNumberSection');
+        const numberListSection = document.getElementById('numberListSection');
+        const userInfo = document.getElementById('userInfo');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const addNumberBtn = document.getElementById('addNumberBtn');
+        const refreshNumbersBtn = document.getElementById('refreshNumbersBtn');
+        const loginStatus = document.getElementById('loginStatus');
+        const addNumberStatus = document.getElementById('addNumberStatus');
+        const numbersTable = document.getElementById('numbersTable');
+        const numbersTableBody = document.getElementById('numbersTableBody');
+        const loadingNumbers = document.getElementById('loadingNumbers');
+        const emptyNumbers = document.getElementById('emptyNumbers');
+        
+        // Data aplikasi
+        let currentUser = null;
+        let currentToken = null;
+        let numbers = [];
+        
+        // URL GitHub
+        const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/zionjs/database/refs/heads/main/number.json';
+        const GITHUB_API_URL = 'https://api.github.com/repos/zionjs/database/contents/number.json';
+        
+        // Event Listeners
+        loginBtn.addEventListener('click', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        addNumberBtn.addEventListener('click', handleAddNumber);
+        refreshNumbersBtn.addEventListener('click', loadNumbers);
+        
+        // Cek apakah user sudah login
+        checkLoginStatus();
+        
+        // Fungsi untuk mengecek status login
+        function checkLoginStatus() {
+            const savedUser = localStorage.getItem('githubUser');
+            const savedToken = localStorage.getItem('githubToken');
+            
+            if (savedUser && savedToken) {
+                currentUser = savedUser;
+                currentToken = savedToken;
+                showMainInterface();
+            }
+        }
+        
+        // Fungsi untuk menangani login
+        function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const token = document.getElementById('token').value.trim();
+            
+            if (!username || !token) {
+                showStatus(loginStatus, 'error', 'Username dan token harus diisi!');
+                return;
+            }
+            
+            if (username !== 'zionjs') {
+                showStatus(loginStatus, 'error', 'Username tidak valid!');
+                return;
+            }
+            
+            // Simpan data login
+            currentUser = username;
+            currentToken = token;
+            localStorage.setItem('githubUser', username);
+            localStorage.setItem('githubToken', token);
+            
+            showStatus(loginStatus, 'success', 'Login berhasil!');
+            
+            // Tunggu sebentar sebelum menampilkan interface utama
+            setTimeout(() => {
+                showMainInterface();
+            }, 1000);
+        }
+        
+        // Fungsi untuk menangani logout
+        function handleLogout() {
+            currentUser = null;
+            currentToken = null;
+            localStorage.removeItem('githubUser');
+            localStorage.removeItem('githubToken');
+            
+            // Reset form
+            document.getElementById('username').value = '';
+            document.getElementById('token').value = '';
+            
+            // Tampilkan form login
+            loginSection.classList.remove('hidden');
+            addNumberSection.classList.add('hidden');
+            numberListSection.classList.add('hidden');
+            userInfo.classList.add('hidden');
+            
+            showStatus(loginStatus, 'success', 'Logout berhasil!');
+        }
+        
+        // Fungsi untuk menampilkan interface utama setelah login
+        function showMainInterface() {
+            loginSection.classList.add('hidden');
+            addNumberSection.classList.remove('hidden');
+            numberListSection.classList.remove('hidden');
+            userInfo.classList.remove('hidden');
+            
+            usernameDisplay.textContent = `Login sebagai: ${currentUser}`;
+            
+            // Muat data nomor
+            loadNumbers();
+        }
+        
+        // Fungsi untuk menangani penambahan nomor
+        async function handleAddNumber() {
+            const newNumber = document.getElementById('newNumber').value.trim();
+            
+            if (!newNumber) {
+                showStatus(addNumberStatus, 'error', 'Nomor harus diisi!');
+                return;
+            }
+            
+            // Validasi nomor (contoh sederhana)
+            if (!/^\d+$/.test(newNumber)) {
+                showStatus(addNumberStatus, 'error', 'Nomor hanya boleh berisi angka!');
+                return;
+            }
+            
+            // Cek apakah nomor sudah ada
+            if (numbers.includes(newNumber)) {
+                showStatus(addNumberStatus, 'error', 'Nomor sudah terdaftar!');
+                return;
+            }
+            
+            try {
+                // Tambahkan nomor ke array
+                numbers.push(newNumber);
+                
+                // Update file di GitHub
+                await updateGitHubFile();
+                
+                // Reset form
+                document.getElementById('newNumber').value = '';
+                
+                showStatus(addNumberStatus, 'success', 'Nomor berhasil ditambahkan!');
+                
+                // Refresh daftar nomor
+                loadNumbers();
+            } catch (error) {
+                console.error('Error adding number:', error);
+                showStatus(addNumberStatus, 'error', 'Gagal menambahkan nomor: ' + error.message);
+            }
+        }
+        
+        // Fungsi untuk memuat daftar nomor dari GitHub
+        async function loadNumbers() {
+            showLoadingNumbers(true);
+            
+            try {
+                const response = await fetch(GITHUB_RAW_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data dari GitHub');
+                }
+                
+                const data = await response.json();
+                numbers = data.numbers || [];
+                
+                displayNumbers();
+            } catch (error) {
+                console.error('Error loading numbers:', error);
+                showStatus(addNumberStatus, 'error', 'Gagal memuat data: ' + error.message);
+                showEmptyNumbers();
+            } finally {
+                showLoadingNumbers(false);
+            }
+        }
+        
+        // Fungsi untuk menampilkan daftar nomor
+        function displayNumbers() {
+            numbersTableBody.innerHTML = '';
+            
+            if (numbers.length === 0) {
+                showEmptyNumbers();
+                return;
+            }
+            
+            numbers.forEach((number, index) => {
+                const row = document.createElement('tr');
+                
+                const noCell = document.createElement('td');
+                noCell.textContent = index + 1;
+                
+                const numberCell = document.createElement('td');
+                numberCell.textContent = number;
+                
+                const actionCell = document.createElement('td');
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Hapus';
+                deleteBtn.classList.add('action-btn', 'delete-btn');
+                deleteBtn.addEventListener('click', () => deleteNumber(index));
+                
+                actionCell.appendChild(deleteBtn);
+                
+                row.appendChild(noCell);
+                row.appendChild(numberCell);
+                row.appendChild(actionCell);
+                
+                numbersTableBody.appendChild(row);
+            });
+            
+            numbersTable.classList.remove('hidden');
+            emptyNumbers.classList.add('hidden');
+        }
+        
+        // Fungsi untuk menghapus nomor
+        async function deleteNumber(index) {
+            if (!confirm('Apakah Anda yakin ingin menghapus nomor ini?')) {
+                return;
+            }
+            
+            try {
+                // Hapus nomor dari array
+                numbers.splice(index, 1);
+                
+                // Update file di GitHub
+                await updateGitHubFile();
+                
+                showStatus(addNumberStatus, 'success', 'Nomor berhasil dihapus!');
+                
+                // Refresh daftar nomor
+                loadNumbers();
+            } catch (error) {
+                console.error('Error deleting number:', error);
+                showStatus(addNumberStatus, 'error', 'Gagal menghapus nomor: ' + error.message);
+            }
+        }
+        
+        // Fungsi untuk memperbarui file di GitHub
+        async function updateGitHubFile() {
+            // Dapatkan SHA file saat ini
+            const fileInfoResponse = await fetch(GITHUB_API_URL, {
+                headers: {
+                    'Authorization': `token ${currentToken}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!fileInfoResponse.ok) {
+                throw new Error('Gagal mendapatkan informasi file');
+            }
+            
+            const fileInfo = await fileInfoResponse.json();
+            const sha = fileInfo.sha;
+            
+            // Update file
+            const content = {
+                numbers: numbers
+            };
+            
+            const contentBase64 = btoa(JSON.stringify(content, null, 2));
+            
+            const updateResponse = await fetch(GITHUB_API_URL, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${currentToken}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Update number list: ${new Date().toISOString()}`,
+                    content: contentBase64,
+                    sha: sha
+                })
+            });
+            
+            if (!updateResponse.ok) {
+                throw new Error('Gagal memperbarui file di GitHub');
+            }
+            
+            return await updateResponse.json();
+        }
+        
+        // Fungsi untuk menampilkan status
+        function showStatus(element, type, message) {
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.classList.remove('hidden');
+            
+            // Sembunyikan status setelah 3 detik
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Fungsi untuk menampilkan loading
+        function showLoadingNumbers(show) {
+            if (show) {
+                loadingNumbers.classList.remove('hidden');
+                numbersTable.classList.add('hidden');
+                emptyNumbers.classList.add('hidden');
+            } else {
+                loadingNumbers.classList.add('hidden');
+            }
+        }
+        
+        // Fungsi untuk menampilkan pesan kosong
+        function showEmptyNumbers() {
+            numbersTable.classList.add('hidden');
+            emptyNumbers.classList.remove('hidden');
         }
     </script>
 </body>
